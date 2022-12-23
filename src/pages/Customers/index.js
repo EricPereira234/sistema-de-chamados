@@ -12,6 +12,12 @@ export default function Customers(){
     const [nomeFantasia, setNomeFantasia] = useState('');
     const [cnpj, setCnpj] = useState('');
     const [endereco, setEndereco] = useState('');
+
+    //cadastrando clientes
+    function handleAdd (e) {
+        e.preventDefault();
+        alert('teste')
+    }
     
     return(
         <>
@@ -21,7 +27,7 @@ export default function Customers(){
                     <FiUser size={25} />
                 </Title>
                 <div className="container" >
-                    <form className="form-profile customers">
+                    <form className="form-profile customers" onSubmit={handleAdd} >
                         <label>Nome fantaisa</label>
                         <input type={'text'} value={nomeFantasia} onChange={(e)=>setNomeFantasia(e.target.value)} />
 
