@@ -1,4 +1,5 @@
 import "./new.css";
+import { useState } from "react";
 
 //importando arquivos
 import Header from "../../components/Header";
@@ -9,9 +10,22 @@ import { FiPlus } from "react-icons/fi";
 
 export default function New(){
 
+    const [assunto, setAssunto] = useState('Suporte');
+    const [status, setStatus] = useState('Aberto');
+    const [complemento, setComplemento] = useState('');
+
     function hadleRegister(e){
         e.preventDefault();
         alert('teste')
+    }
+
+    //chama quando troca o assunto
+    function handleChangeSelect(e){
+        setAssunto(e.target.value);
+    }
+    //chama quando troca o status
+    function options(e){
+        setStatus(e.target.value);
     }
 
     return (
@@ -34,8 +48,8 @@ export default function New(){
                         </select>
 
                         <label>Assunto</label>
-                        <select>
-                            <option value='Suport'>Suporte</option>
+                        <select value={assunto} onChange={handleChangeSelect} >
+                            <option value='Supore'>Suporte</option>
                             <option value='Visita Técnica'>Visita Técnica</option>
                             <option value='Financeiro'>Financeiro</option>
                         </select>
@@ -47,6 +61,8 @@ export default function New(){
                                 type={'radio'}
                                 name='radio'
                                 value={'Aberto'}
+                                onChange={options}
+                                checked={status === 'Aberto'}
                             />
                             <span>Em Aberto</span>
 
@@ -54,6 +70,8 @@ export default function New(){
                                 type={'radio'}
                                 name='radio'
                                 value={'Progresso'}
+                                onChange={options}
+                                checked={status === 'Progresso'}
                             />
                             <span>Progresso</span>
 
@@ -61,6 +79,8 @@ export default function New(){
                                 type={'radio'}
                                 name='radio'
                                 value={'Atendido'}
+                                onChange={options}
+                                checked={status === 'Atendido'}
                             />
                             <span>Atendido</span>
                         </div>
@@ -69,6 +89,8 @@ export default function New(){
                         <textarea
                             type='text'
                             placeholder='Descreva seu problema (opcional)'
+                            value={complemento}
+                            onChange={(e)=>setComplemento(e.target.value)}
                         />
 
                         <button type="submit" >Salvar</button>
