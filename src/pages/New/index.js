@@ -1,9 +1,10 @@
 import "./new.css";
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 
 //importando arquivos
 import Header from "../../components/Header";
 import Title from "../../components/Title";
+import { AuthContext } from "../../contexts/auth";
 
 //importando icones
 import { FiPlus } from "react-icons/fi";
@@ -13,6 +14,20 @@ export default function New(){
     const [assunto, setAssunto] = useState('Suporte');
     const [status, setStatus] = useState('Aberto');
     const [complemento, setComplemento] = useState('');
+
+    const { user } = useContext(AuthContext);
+    const [loadCustomers, setLoadCustomers] = useState(true);
+    const [customers, setCustomers ] = useState([]);
+
+    useEffect(()=>{
+        async function loadCustomers(){
+
+        }
+
+        loadCustomers()
+    },[])
+
+
 
     function hadleRegister(e){
         e.preventDefault();
