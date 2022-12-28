@@ -1,5 +1,9 @@
 import "./new.css";
 import { useState, useEffect, useContext } from "react";
+import {toast} from "react-toastify";
+
+//importando o firebase
+import firebase from "../../services/firebaseConnection";
 
 //importando arquivos
 import Header from "../../components/Header";
@@ -18,9 +22,37 @@ export default function New(){
     const { user } = useContext(AuthContext);
     const [loadCustomers, setLoadCustomers] = useState(true);
     const [customers, setCustomers ] = useState([]);
+    const [customersSelected, setCustomersSelected] = useState(0);
 
     useEffect(()=>{
         async function loadCustomers(){
+            await firebase.firestore().collection('customers')
+            .get()
+            .then((snapshot)=>{
+                let lista = [];
+
+                snapshot.forEach((doc)=>{
+                    lista.push({
+                        id: doc.id,
+                        nomeFantasia: doc.data().nomeFantasia
+                    })
+                })
+
+                if(lista.length === 0){
+                    toast.error('não existe empresa cadastrada !');
+                     setCustomers([{id: 1, nome: 'eric'}]);
+                     setLoadCustomers(false);
+                     return;
+                }
+
+                setCustomers(lista);
+                setLoadCustomers(false);
+
+            })
+            .catch((error)=>{
+                setLoadCustomers(false);
+                setCustomers([{id: 1, nome: 'eric'}]);
+            })
 
         }
 
@@ -43,6 +75,11 @@ export default function New(){
         setStatus(e.target.value);
     }
 
+    //chamado quando troca o cliente
+    function handleRegister(){
+        
+    }
+
     return (
         <>
         
@@ -56,7 +93,7 @@ export default function New(){
 
                     <form className="form-profile" onSubmit={hadleRegister} >
                         <label>Cliente</label>
-                        <select>
+                        <select value={customersSelected} onChange={handleRegister} >
                             <option key={1} value={1}>
                                 Sujeito
                             </option>
