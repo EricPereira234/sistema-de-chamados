@@ -1,6 +1,6 @@
 import "./new.css";
 import { useState, useEffect, useContext } from "react";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 //importando o firebase
 import firebase from "../../services/firebaseConnection";
@@ -13,7 +13,7 @@ import { AuthContext } from "../../contexts/auth";
 //importando icones
 import { FiPlus } from "react-icons/fi";
 
-export default function New(){
+export default function New() {
 
     const [assunto, setAssunto] = useState('Suporte');
     const [status, setStatus] = useState('Aberto');
@@ -21,69 +21,69 @@ export default function New(){
 
     const { user } = useContext(AuthContext);
     const [loadCustomers, setLoadCustomers] = useState(true);
-    const [customers, setCustomers ] = useState([]);
+    const [customers, setCustomers] = useState([]);
     const [customersSelected, setCustomersSelected] = useState(0);
 
-    useEffect(()=>{
-        async function loadCustomers(){
+    useEffect(() => {
+        async function loadCustomers() {
             await firebase.firestore().collection('customers')
-            .get()
-            .then((snapshot)=>{
-                let lista = [];
+                .get()
+                .then((snapshot) => {
+                    let lista = [];
 
-                snapshot.forEach((doc)=>{
-                    lista.push({
-                        id: doc.id,
-                        nomeFantasia: doc.data().nomeFantasia
+                    snapshot.forEach((doc) => {
+                        lista.push({
+                            id: doc.id,
+                            nomeFantasia: doc.data().nomeFantasia
+                        })
                     })
+
+                    if (lista.length === 0) {
+                        toast.error('não existe empresa cadastrada !');
+                        setCustomers([{ id: 1, nome: 'eric' }]);
+                        setLoadCustomers(false);
+                        return;
+                    }
+
+                    setCustomers(lista);
+                    setLoadCustomers(false);
+
                 })
-
-                if(lista.length === 0){
-                    toast.error('não existe empresa cadastrada !');
-                     setCustomers([{id: 1, nome: 'eric'}]);
-                     setLoadCustomers(false);
-                     return;
-                }
-
-                setCustomers(lista);
-                setLoadCustomers(false);
-
-            })
-            .catch((error)=>{
-                setLoadCustomers(false);
-                setCustomers([{id: 1, nome: 'eric'}]);
-            })
+                .catch((error) => {
+                    setLoadCustomers(false);
+                    setCustomers([{ id: 1, nome: 'eric' }]);
+                })
 
         }
 
         loadCustomers()
-    },[])
+    }, [])
 
 
 
-    function hadleRegister(e){
+    function hadleRegister(e) {
         e.preventDefault();
         alert('teste')
     }
 
     //chama quando troca o assunto
-    function handleChangeSelect(e){
+    function handleChangeSelect(e) {
         setAssunto(e.target.value);
     }
     //chama quando troca o status
-    function options(e){
+    function options(e) {
         setStatus(e.target.value);
     }
 
     //chamado quando troca o cliente
-    function handleRegister(){
-        
+    function handleChageCustomers(e) {
+        setCustomersSelected(e.target.value);
     }
 
     return (
         <>
-        
-            <Header/>
+
+            <Header />
             <div className="content">
                 <Title name={'Novo Chamado'} >
                     <FiPlus size={25} />
@@ -93,11 +93,22 @@ export default function New(){
 
                     <form className="form-profile" onSubmit={hadleRegister} >
                         <label>Cliente</label>
-                        <select value={customersSelected} onChange={handleRegister} >
-                            <option key={1} value={1}>
-                                Sujeito
-                            </option>
-                        </select>
+                        {loadCustomers ? (
+                            <input type={'text'} disabled={true} value={'Carregando...'} />
+                        ) 
+                        :
+                            <select value={customersSelected} onChange={handleChageCustomers} >
+                                {customers.map((item, index) => {
+                                    return (
+                                        <option key={item.id} value={index}>
+                                            {item.nomeFantasia}
+                                        </option>
+                                    )
+                                })}
+                            </select>
+
+                        }
+
 
                         <label>Assunto</label>
                         <select value={assunto} onChange={handleChangeSelect} >
@@ -142,14 +153,14 @@ export default function New(){
                             type='text'
                             placeholder='Descreva seu problema (opcional)'
                             value={complemento}
-                            onChange={(e)=>setComplemento(e.target.value)}
+                            onChange={(e) => setComplemento(e.target.value)}
                         />
 
                         <button type="submit" >Salvar</button>
                     </form>
                 </div>
             </div>
-        
+
         </>
     )
 }
