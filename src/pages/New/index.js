@@ -60,10 +60,26 @@ export default function New() {
     }, [])
 
 
-
-    function hadleRegister(e) {
+    // funcão que salva os chamados
+    async function hadleRegister(e) {
         e.preventDefault();
-        alert('teste')
+        await firebase.firestore().collection('chamados')
+        .add({
+            created: new Date(),
+            cliente: customers[customersSelected].id,
+            assunto: assunto,
+            status: status,
+            complemento: complemento,
+            userId: user.uid
+        })
+        .then(()=>{
+            toast.success('Chamado criado com sucesso!');
+            setComplemento('');
+            setCustomersSelected(0);
+        })
+        .catch((erro)=>{
+            toast.error('Erro ao cadastar chamado!');
+        })
     }
 
     //chama quando troca o assunto
