@@ -1,6 +1,9 @@
 import "./dashboard.css";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
+
+
 
 //importando arquivos
 import Title from '../../components/Title';
@@ -8,11 +11,94 @@ import Header from '../../components/Header';
 
 //importando icones
 import { FiEdit3, FiMessageSquare, FiPlus, FiSearch } from "react-icons/fi";
+import { toast } from "react-toastify";
+
+
+import firebase from "../../services/firebaseConnection";
+
+const listRef = firebase.firestore().collection('chamados').orderBy('created', 'desc');
+
 
 export default function Dashboard() {
 
-  const [chamado, setCamado] = useState(true);
+  const [chamado, setCamado] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [isEmpty, setIstEmpty] = useState(false);
+  const [lastDocs, setLastDocs] = useState();
 
+
+  useEffect(()=>{
+    loadChamados();
+
+    return ()=>{}
+  },[]);
+
+
+  async function loadChamados(){
+    await listRef.limit(5)
+    .get()
+    .then((snapshot)=>{
+      updateState(snapshot)
+    })
+    .catch(()=>{
+      toast.error('Chamados não encontrados');
+      setLoadingMore(false);
+    })
+
+    setLoading(false);
+  }
+
+  async function updateState(snapshot){
+    const isCollectionEmpty = snapshot.size === 0;
+
+    if(!isCollectionEmpty){
+      let lista = [];
+
+      snapshot.forEach((doc)=>{
+        lista.push({
+          id: doc.id,
+          assunto: doc.data().assunto,
+          cliente: doc.data().cliente,
+          clienteId: doc.data().clienteId,
+          created: doc.data().created,
+          createdFormated: format(doc.data().created.toDate(), 'dd/MM/yyy'),
+          complemento: doc.data().complemento
+        })
+      })
+
+      //pegando o ultimo documento buscado
+      const lastDoc = snapshot.docs[snapshot.docs.length -1];
+
+      setCamado(chamado => [...chamado, ...lista]);
+      setLastDocs(lastDoc);
+    }else{
+      setIstEmpty(true);
+    }
+    setLoadingMore(false);
+  }
+
+
+
+
+
+  if(loading){
+    return(
+      <>
+      
+      <Header />
+      <div className="content">
+        <Title name={'Atendimentos'} >
+          <FiMessageSquare size={25} />
+        </Title>
+      </div>
+      <div className="container dashboard" >
+        <span>Buscando chamados....</span>
+      </div>
+      
+      </>
+    )
+  }
 
   return (
     <>
