@@ -8,6 +8,7 @@ import { format } from "date-fns";
 //importando arquivos
 import Title from '../../components/Title';
 import Header from '../../components/Header';
+import Modal from "../../components/Modal";
 
 //importando icones
 import { FiEdit3, FiMessageSquare, FiPlus, FiSearch } from "react-icons/fi";
@@ -26,76 +27,94 @@ export default function Dashboard() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [isEmpty, setIstEmpty] = useState(false);
   const [lastDocs, setLastDocs] = useState();
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [detail, setDetail] = useState();
 
 
-  useEffect(()=>{
+  useEffect(() => {
     loadChamados();
 
-    return ()=>{}
-  },[]);
+    return () => { }
+  }, []);
 
 
-  async function loadChamados(){
+  async function loadChamados() {
     await listRef.limit(5)
-    .get()
-    .then((snapshot)=>{
-      updateState(snapshot)
-    })
-    .catch(()=>{
-      toast.error('Chamados não encontrados');
-      setLoadingMore(false);
-    })
+      .get()
+      .then((snapshot) => {
+        updateState(snapshot)
+      })
+      .catch(() => {
+        toast.error('Chamados não encontrados');
+        setLoadingMore(false);
+      })
 
     setLoading(false);
   }
 
-  async function updateState(snapshot){
+  async function updateState(snapshot) {
     const isCollectionEmpty = snapshot.size === 0;
 
-    if(!isCollectionEmpty){
+    if (!isCollectionEmpty) {
       let lista = [];
 
-      snapshot.forEach((doc)=>{
+      snapshot.forEach((doc) => {
         lista.push({
           id: doc.id,
           assunto: doc.data().assunto,
-          cliente: doc.data().cliente,
+          cliente: doc.data().cliente.nomeFantasia,
           clienteId: doc.data().clienteId,
           created: doc.data().created,
+          status: doc.data().status,
           createdFormated: format(doc.data().created.toDate(), 'dd/MM/yyy'),
           complemento: doc.data().complemento
         })
       })
 
       //pegando o ultimo documento buscado
-      const lastDoc = snapshot.docs[snapshot.docs.length -1];
+      const lastDoc = snapshot.docs[snapshot.docs.length - 1];
 
       setCamado(chamado => [...chamado, ...lista]);
       setLastDocs(lastDoc);
-    }else{
+    } else {
       setIstEmpty(true);
     }
     setLoadingMore(false);
   }
 
 
+  //carregando mais chamados
+  async function CarregaMais() {
+    setLoadingMore(true);
+    await listRef.startAfter(lastDocs).limit(4)
+      .get()
+      .then((snapshot) => {
+        updateState(snapshot)
+      })
+  }
+
+  //modal
+  function togglePostModal(item) {
+    setShowPostModal(!showPostModal)// trocando de true para false
+    setDetail(item);
+  }
 
 
 
-  if(loading){
-    return(
+  if (loading) {
+    return (
       <>
-      
-      <Header />
-      <div className="content">
-        <Title name={'Atendimentos'} >
-          <FiMessageSquare size={25} />
-        </Title>
-      </div>
-      <div className="container dashboard" >
-        <span>Buscando chamados....</span>
-      </div>
-      
+
+        <Header />
+        <div className="content">
+          <Title name={'Atendimentos'} >
+            <FiMessageSquare size={25} />
+          </Title>
+        </div>
+        <div className="container dashboard" >
+          <span>Buscando chamados....</span>
+        </div>
+
       </>
     )
   }
@@ -121,8 +140,8 @@ export default function Dashboard() {
           <>
 
             <Link to={'/new'} className="new" >
-                <FiPlus size={25} color="#fff" />
-                Novo chamado
+              <FiPlus size={25} color="#fff" />
+              Novo chamado
             </Link>
 
             <table>
@@ -137,33 +156,50 @@ export default function Dashboard() {
               </thead>
 
               <tbody>
-                <tr>
-                  <td data-label="Cliente" > Sujeito </td>
-                  <td data-label="Assunto" > Suporte </td>
-                  <td data-label="Status" >
-                    <span className="badge" style={{ backgroundColor: '#5cb85c' }}  > Em aberto</span>
-                  </td>
+                {chamado.map((item, index) => {
 
-                  <td data-label="Cadastrado" > 25/12/2021 </td>
+                  return (
+                    <tr>
+                      <td data-label="Cliente" > {item.cliente} </td>
+                      <td data-label="Assunto" > {item.assunto} </td>
+                      <td data-label="Status" >
+                        <span className="badge" style={{ backgroundColor: item.status === 'Aberto' ? '#5cb85c' : '#999' }}  >{item.status}</span>
+                      </td>
 
-                  <td data-label="#" >
-                    <button className="action" style={{ backgroundColor: '#3583f6' }} >
-                      <FiSearch color="#fff" size={17} />
-                    </button>
-                    <button className="action" style={{ backgroundColor: '#f6a935' }} >
-                      <FiEdit3 color="#fff" size={17} />
-                    </button>
-                  </td>
-                </tr>
+                      <td data-label="Cadastrado" > {item.createdFormated} </td>
+
+                      <td data-label="#" >
+                        <button className="action" style={{ backgroundColor: '#3583f6' }} onClick={() => togglePostModal(item)} >
+                          <FiSearch color="#fff" size={17} />
+                        </button>
+                        <button className="action" style={{ backgroundColor: '#f6a935' }} >
+                          <FiEdit3 color="#fff" size={17} />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+
+                })}
+
 
               </tbody>
+
             </table>
+
+            {!loadingMore && !isEmpty && <button className="btn-Chamados" onClick={CarregaMais} >Buscar Mais</button>}
 
           </>
 
         )}
 
       </div>
+
+      {showPostModal && (
+        <Modal 
+          conteudo ={detail}
+          close = {togglePostModal}
+        />
+      )}
 
     </>
   )

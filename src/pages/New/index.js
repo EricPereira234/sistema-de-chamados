@@ -40,7 +40,6 @@ export default function New() {
 
                     if (lista.length === 0) {
                         toast.error('não existe empresa cadastrada !');
-                        setCustomers([{ id: 1, nome: 'eric' }]);
                         setLoadCustomers(false);
                         return;
                     }
@@ -51,7 +50,7 @@ export default function New() {
                 })
                 .catch((error) => {
                     setLoadCustomers(false);
-                    setCustomers([{ id: 1, nome: 'eric' }]);
+                   
                 })
 
         }
@@ -66,7 +65,7 @@ export default function New() {
         await firebase.firestore().collection('chamados')
         .add({
             created: new Date(),
-            cliente: customers[customersSelected].id,
+            cliente: customers[customersSelected],
             assunto: assunto,
             status: status,
             complemento: complemento,
